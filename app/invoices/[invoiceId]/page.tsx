@@ -13,7 +13,11 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Edit2, Save, Trash2 } from "lucide-react";
 
-const SingleInvoice = ({ params }: { params: { invoiceId: string } }) => {
+interface InvoicePageProps {
+  params: { invoiceId: string };
+}
+
+const SingleInvoice = async ({ params }: InvoicePageProps) => {
   console.log("params.invoiceId", params.invoiceId);
   return (
     <div className="w-full h-full max-w-4xl flex flex-col mx-auto gap-5 my-5">
