@@ -12,12 +12,14 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Edit2, Save, Trash2 } from "lucide-react";
-interface InvoicePageProps {
-  params: { invoiceId: string };
+
+interface SingleInvoicePageProps {
+  params: Promise<{ invoiceId: string }>;
 }
 
-const SingleInvoice = ({ params }: InvoicePageProps) => {
-  console.log("params.invoiceId", params.invoiceId);
+const SingleInvoice = async ({ params }: SingleInvoicePageProps) => {
+  const { invoiceId } = await params;
+  console.log("invoiceId", invoiceId);
   return (
     <div className="w-full h-full max-w-4xl flex flex-col mx-auto gap-5 my-5">
       <section
