@@ -82,7 +82,7 @@ const RecipientSectionForm = ({
   ) => (
     <FormField
       control={form.control}
-      name={`${section}.${name}` as any}
+      name={`${section}.${name}`}
       render={({ field }) => (
         <FormItem
           className={`${disabled ? "cursor-not-allowed opacity-50" : ""}`}
