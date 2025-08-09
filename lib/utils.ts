@@ -1,4 +1,5 @@
 import { clsx, type ClassValue } from "clsx";
+import { QRCodeSVG } from "qrcode.react";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -22,4 +23,10 @@ export function generateRandomID() {
 
   // Generate and return unique ID
   return `${year}-${month}-${day}-${time}`;
+}
+
+// Function to format amount
+export function formatAmount(amount: number): string {
+  const formattedAmt = new Intl.NumberFormat("en-US").format(amount);
+  return formattedAmt;
 }

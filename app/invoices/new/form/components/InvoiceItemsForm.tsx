@@ -46,9 +46,13 @@ const defaultFormData = {
 // Prop interface
 interface InvoiceItemsFormProps {
   toPrevStep: () => void;
+  toNextStep: () => void;
 }
 
-const InvoiceItemsForm = ({ toPrevStep }: InvoiceItemsFormProps) => {
+const InvoiceItemsForm = ({
+  toPrevStep,
+  toNextStep,
+}: InvoiceItemsFormProps) => {
   const form = useForm<FormData>({
     resolver: zodResolver(invoiceItemsFormSchema),
     defaultValues: { ...defaultFormData },
@@ -168,6 +172,7 @@ const InvoiceItemsForm = ({ toPrevStep }: InvoiceItemsFormProps) => {
     // ✅ This will be type-safe and validated.
     console.log(values);
     upsertInvoiceItems(values);
+    toNextStep();
   }
 
   // Performing side effect on `invoiceItemsData` and update the form default value on initial render
@@ -362,10 +367,7 @@ const InvoiceItemsForm = ({ toPrevStep }: InvoiceItemsFormProps) => {
                 render={({ field }) => (
                   <FormItem className="col-span-2 mb-3">
                     <FormLabel className="text-sm font-extrabold tracking-tight">
-                      Comments or Special Instructions:{" "}
-                      <em className="font-normal text-muted-foreground/30">
-                        (optional)
-                      </em>
+                      Comments or Special Instructions:
                     </FormLabel>
                     <FormControl>
                       <Textarea
@@ -384,10 +386,7 @@ const InvoiceItemsForm = ({ toPrevStep }: InvoiceItemsFormProps) => {
                 render={({ field }) => (
                   <FormItem className="col-span-2 mb-3">
                     <FormLabel className="text-sm font-extrabold tracking-tight">
-                      Terms:{" "}
-                      <em className="font-normal text-muted-foreground/30">
-                        (optional)
-                      </em>
+                      Terms:
                     </FormLabel>
                     <FormControl>
                       <Textarea

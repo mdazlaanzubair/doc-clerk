@@ -185,6 +185,8 @@ const InvoiceHeaderForm = ({ toNextStep }: InvoiceHeaderFormProps) => {
           onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-8 grid grid-cols-1 lg:grid-cols-3 gap-5 items-start my-5"
         >
+          {renderTextField("invoiceTitle", "Invoice Title", "INVOICE")}
+
           {renderTextField(
             "companyName",
             "Company Name",
@@ -203,6 +205,7 @@ const InvoiceHeaderForm = ({ toNextStep }: InvoiceHeaderFormProps) => {
             true
           )}
           {renderTextField("companyPhone", "Phone", "e.g. +92 000 000 0000")}
+          {renderTextField("poNumber", "PO Number", "Purchase order number")}
 
           <FormField
             control={form.control}
@@ -224,8 +227,6 @@ const InvoiceHeaderForm = ({ toNextStep }: InvoiceHeaderFormProps) => {
               </FormItem>
             )}
           />
-
-          {renderTextField("poNumber", "PO Number", "Purchase order number")}
 
           <FormField
             control={form.control}
@@ -255,7 +256,6 @@ const InvoiceHeaderForm = ({ toNextStep }: InvoiceHeaderFormProps) => {
             )}
           />
 
-          {renderTextField("invoiceTitle", "Invoice Title", "INVOICE")}
           {renderDateField("invoiceDate", "Invoice Date")}
           {renderDateField("dueDate", "Due Date")}
           {renderTextField("currency", "Currency", "e.g. Rs., $, ₹, etc", true)}

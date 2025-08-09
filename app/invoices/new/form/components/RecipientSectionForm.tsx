@@ -88,12 +88,7 @@ const RecipientSectionForm = ({
           className={`${disabled ? "cursor-not-allowed opacity-50" : ""}`}
         >
           <FormLabel>
-            {label}{" "}
-            {required ? (
-              <strong className="text-red-500">*</strong>
-            ) : (
-              <em className="text-muted-foreground/30">(optional)</em>
-            )}
+            {label} {required && <strong className="text-red-500">*</strong>}
           </FormLabel>
           <FormControl>
             {type === "input" ? (
