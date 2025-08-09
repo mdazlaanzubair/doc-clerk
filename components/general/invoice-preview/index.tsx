@@ -21,6 +21,7 @@ const InvoicePreview = ({ invoiceId, editInvoice }: InvoicePreviewProps) => {
   const { recipientData } = useRecipientData();
   const { invoiceItemsData } = useInvoiceItems();
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [invoiceData, setInvoiceData] = useState<any | null>(null);
 
   useEffect(() => {

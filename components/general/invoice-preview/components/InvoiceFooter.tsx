@@ -60,7 +60,7 @@ const InvoiceFooter = ({ data }: InvoiceFooterProps) => {
     taxValue = Number(taxValue.toFixed(2));
 
     // Only calculate shipping when it is set true in optional fields
-    let shippingValue = shipping;
+    const shippingValue = shipping;
 
     // Calculate the total amount after applying discount, tax, and shipping
     let total = subtotal - discountValue + taxValue + shippingValue;
