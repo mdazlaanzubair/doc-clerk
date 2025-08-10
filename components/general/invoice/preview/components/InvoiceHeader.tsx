@@ -1,11 +1,11 @@
 import Image from "next/image";
 import React from "react";
 import logo from "@/public/globe.svg";
-import { InvoiceInterface } from "@/types";
+import { FormInterface, InvoiceInterface } from "@/types";
 import { format } from "date-fns";
 
 interface InvoiceHeaderProps {
-  data: InvoiceInterface;
+  data: FormInterface | InvoiceInterface;
 }
 
 const InvoiceHeader = ({ data }: InvoiceHeaderProps) => {

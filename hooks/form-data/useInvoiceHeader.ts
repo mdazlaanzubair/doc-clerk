@@ -1,4 +1,4 @@
-import { invoiceHeaderFormSchema } from "@/app/invoices/new/form/components/formSchemas";
+import { invoiceHeaderFormSchema } from "@/components/general/invoice/form/components/formSchemas";
 import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
 

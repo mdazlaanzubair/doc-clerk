@@ -1,11 +1,11 @@
 import { Separator } from "@/components/ui/separator";
 import React, { useEffect, useState } from "react";
-import { InvoiceInterface } from "@/types";
+import { FormInterface, InvoiceInterface } from "@/types";
 import { formatAmount } from "@/lib/utils";
 import { QRCodeSVG } from "qrcode.react";
 
 interface InvoiceFooterProps {
-  data: InvoiceInterface;
+  data: FormInterface | InvoiceInterface;
 }
 
 const InvoiceFooter = ({ data }: InvoiceFooterProps) => {

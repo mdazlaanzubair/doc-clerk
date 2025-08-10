@@ -1,4 +1,4 @@
-import { recipientFormSchema } from "@/app/invoices/new/form/components/formSchemas";
+import { recipientFormSchema } from "@/components/general/invoice/form/components/formSchemas";
 import { useCallback, useEffect, useState } from "react";
 import { z } from "zod";
 

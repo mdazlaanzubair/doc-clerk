@@ -1,8 +1,8 @@
-import { InvoiceInterface, RecipientInterface } from "@/types";
+import { FormInterface, InvoiceInterface, RecipientInterface } from "@/types";
 import React from "react";
 
 interface RecipientSectionProps {
-  data: InvoiceInterface;
+  data: FormInterface | InvoiceInterface;
 }
 
 const RecipientSection = ({ data }: RecipientSectionProps) => {

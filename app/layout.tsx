@@ -5,6 +5,8 @@ import { ThemeProvider } from "@/provider/ThemeProvider";
 import { ClerkProvider } from "@clerk/nextjs";
 import Header from "@/components/general/Header";
 import Footer from "@/components/general/Footer";
+import { Toaster } from "sonner";
+import SupabaseProvider from "@/provider/SupabaseProvider";
 
 const geistSans = Inter({
   subsets: ["latin"], // Specify the necessary subsets
@@ -38,11 +40,16 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <div className="font-sans flex flex-col w-full h-full">
-              <Header />
-              <main className="w-full flex-1 flex flex-col px-3">{children}</main>
-              <Footer />
-            </div>
+            <SupabaseProvider>
+              <div className="font-sans flex flex-col w-full h-full">
+                <Header />
+                <main className="w-full flex-1 flex flex-col px-3">
+                  {children}
+                </main>
+                <Toaster closeButton />
+                <Footer />
+              </div>
+            </SupabaseProvider>
           </ThemeProvider>
         </body>
       </html>

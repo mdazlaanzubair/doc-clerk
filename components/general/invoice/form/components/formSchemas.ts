@@ -20,10 +20,10 @@ export const invoiceHeaderFormSchema = z.object({
   currency: z.string().min(1, "Currency is required"),
 
   // Optional fields
-  poNumber: z.string().optional(),
-  invoiceTitle: z.string().optional(),
-  companySlogan: z.string().optional(),
-  companyPhone: z.string().optional(),
+  poNumber: z.string().optional().default(""),
+  invoiceTitle: z.string().optional().default(""),
+  companySlogan: z.string().optional().default(""),
+  companyPhone: z.string().optional().default(""),
 });
 
 /* Form 2: Recipient form schema
@@ -38,19 +38,19 @@ export const recipientFormSchema = z
         .string()
         .min(3, "Company name must be at least 3 characters"),
       email: z.string().email("Invalid email address"),
-      phone: z.string().optional(),
+      phone: z.string().optional().default(""),
       companyAddress: z
         .string()
         .min(10, "Address must be at least 10 characters"),
     }),
     shipTo: z.object({
-      recipientName: z.string().optional(),
-      companyName: z.string().optional(),
-      email: z.string().optional(),
-      phone: z.string().optional(),
-      companyAddress: z.string().optional(),
+      recipientName: z.string().optional().default(""),
+      companyName: z.string().optional().default(""),
+      email: z.string().optional().default(""),
+      phone: z.string().optional().default(""),
+      companyAddress: z.string().optional().default(""),
     }),
-    isSame: z.boolean(),
+    isSame: z.boolean().default(false),
   })
   .superRefine((data, ctx) => {
     if (!data.isSame) {
@@ -87,9 +87,9 @@ export const recipientFormSchema = z
 
 // Invoice items form schema
 const invoiceItemSchema = z.object({
-  itemDesc: z.string().min(3, "Name must be at least 3 characters"),
-  qty: z.number().min(1, "Quantity must be at least 1"),
-  cost: z.number().min(1, "Cost must be at least 1"),
+  itemDesc: z.string().min(3, "Name must be at least 3 characters").default(""),
+  qty: z.number().min(1, "Quantity must be at least 1").default(0),
+  cost: z.number().min(1, "Cost must be at least 1").default(0),
 });
 
 // Form 3: Invoice items form schema
@@ -97,16 +97,17 @@ export const invoiceItemsFormSchema = z.object({
   // Required fields
   items: z
     .array(invoiceItemSchema)
-    .min(1, "At least one invoice item is required"),
+    .min(1, "At least one invoice item is required")
+    .default([]),
 
   // Optional fields
-  discount: z.number().min(0, "Discount must be at least 0").optional(),
-  isDiscountAmt: z.boolean().optional(),
-  tax: z.number().min(0, "Tax must be at least 0").optional(),
-  isTaxAmt: z.boolean().optional(),
-  shipping: z.number().min(0, "Tax must be at least 0").optional(),
-  amountPaid: z.number().min(0, "Amount paid must be at least 0").optional(),
-  notes: z.string().optional(),
-  terms: z.string().optional(),
-  thanksMessage: z.string().optional(),
+  discount: z.number().min(0, "Discount must be at least 0").default(0),
+  isDiscountAmt: z.boolean().default(false),
+  tax: z.number().min(0, "Tax must be at least 0").default(0),
+  isTaxAmt: z.boolean().default(false),
+  shipping: z.number().min(0, "Tax must be at least 0").default(0),
+  amountPaid: z.number().min(0, "Amount paid must be at least 0").default(0),
+  notes: z.string().optional().default(""),
+  terms: z.string().optional().default(""),
+  thanksMessage: z.string().optional().default(""),
 });

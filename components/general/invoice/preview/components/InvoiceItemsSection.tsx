@@ -7,11 +7,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatAmount } from "@/lib/utils";
-import { InvoiceInterface } from "@/types";
+import { FormInterface, InvoiceInterface } from "@/types";
 import React from "react";
 
 interface InvoiceItemsSectionProps {
-  data: InvoiceInterface;
+  data: FormInterface | InvoiceInterface;
 }
 
 const InvoiceItemsSection = ({ data }: InvoiceItemsSectionProps) => {

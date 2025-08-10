@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import InvoiceHeaderForm from "./components/InvoiceHeaderForm";
 import RecipientSectionForm from "./components/RecipientSectionForm";
 import InvoiceItemsForm from "./components/InvoiceItemsForm";
-import InvoicePreview from "@/components/general/invoice-preview";
+import InvoicePreview from "@/components/general/invoice/preview";
 
 const InvoiceForm = () => {
   const [formStep, seFormStep] = useState<number>(3);

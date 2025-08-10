@@ -13,7 +13,7 @@ export interface InvoiceItemInterface {
   cost: number;
 }
 
-export interface InvoiceInterface {
+export interface FormInterface {
   invoiceNumber: string;
   companyName: string;
   companyEmail: string;
@@ -38,4 +38,16 @@ export interface InvoiceInterface {
   notes: string;
   terms: string;
   thanksMessage: string;
+}
+
+export interface InvoiceInterface extends FormInterface {
+  id: string;
+  userId: string;
+  created_at: string;
+  updated_at: string;
+  thanksMessage: string;
+  isPublished: boolean;
+  isArchive: boolean;
+  downloadCount: number;
+  printCount: number;
 }
