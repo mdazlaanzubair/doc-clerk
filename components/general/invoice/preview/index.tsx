@@ -14,10 +14,10 @@ import {
   useRecipientData,
   useInvoiceItems,
 } from "@/hooks/form-data";
-import { FormInterface, InvoiceInterface } from "@/types";
 import { useInvoices } from "@/hooks/supabase/useInvoice";
 import { toast } from "sonner";
 import { useAuth } from "@clerk/nextjs";
+import { InvoiceFormInterface, InvoiceInterface } from "@/types";
 
 interface InvoicePreviewProps {
   invoiceId?: string;
@@ -33,7 +33,7 @@ const InvoicePreview = ({ invoiceId, editInvoice }: InvoicePreviewProps) => {
   const { userId, isSignedIn } = useAuth();
 
   // Custom states
-  type InvoiceDataType = FormInterface | InvoiceInterface | null;
+  type InvoiceDataType = InvoiceFormInterface | InvoiceInterface | null;
   const [invoiceData, setInvoiceData] = useState<InvoiceDataType>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
