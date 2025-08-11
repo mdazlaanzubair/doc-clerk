@@ -17,7 +17,7 @@ export interface CompanyInfoInterface {
 }
 
 // Recipient interface
-export interface Recipient {
+export interface RecipientInterface {
   rep: string;
   companyName: string;
   email: string;
@@ -27,8 +27,8 @@ export interface Recipient {
 
 // Recipient info interface
 export interface RecipientInfoInterface {
-  billTo: Recipient;
-  shipTo?: Recipient;
+  billTo: RecipientInterface;
+  shipTo?: RecipientInterface;
   isSameAsBillTo: boolean;
 }
 

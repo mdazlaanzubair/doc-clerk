@@ -1,21 +1,14 @@
 import { Separator } from "@/components/ui/separator";
-import React, { useEffect, useState } from "react";
-import { FormInterface, InvoiceInterface } from "@/types";
+import React from "react";
+import { InvoiceFormInterface, InvoiceInterface } from "@/types";
 import { formatAmount } from "@/lib/utils";
 import { QRCodeSVG } from "qrcode.react";
 
 interface InvoiceFooterProps {
-  data: FormInterface | InvoiceInterface;
+  data: InvoiceFormInterface | InvoiceInterface;
 }
 
 const InvoiceFooter = ({ data }: InvoiceFooterProps) => {
-  // State to hold calculations
-  const [calculations, setCalculations] = useState({
-    subtotal: 0,
-    total: 0,
-    balanceDue: 0,
-  });
-
   // Function to generate invoice QR Code
   function generateInvoiceQR(invoiceId: string) {
     const url = `${process.env.NEXT_PUBLIC_BASE_URL}/invoices/${invoiceId}`;
@@ -30,72 +23,28 @@ const InvoiceFooter = ({ data }: InvoiceFooterProps) => {
     );
   }
 
-  // Preforming side effect on form fields and calculating sum on form values change
-  useEffect(() => {
-    const {
-      items,
-      discount,
-      isDiscountAmt,
-      tax,
-      isTaxAmt,
-      shipping,
-      amountPaid,
-    } = data;
-
-    // Calculate the subtotal by summing up the cost of all items
-    let subtotal = items.reduce(
-      (sum, item) => sum + (Number(item.cost) || 0) * (Number(item.qty) || 0),
-      0
-    );
-    subtotal = Number(subtotal.toFixed(2));
-
-    // Calculate discount based on whether it's an amount or percentage
-    // Only calculate discount when it is set true in optional fields
-    let discountValue = isDiscountAmt ? discount : (subtotal * discount) / 100;
-    discountValue = Number(discountValue.toFixed(2));
-
-    // Calculate tax based on whether it's an amount or percentage
-    // Only calculate tax when it is set true in optional fields
-    let taxValue = isTaxAmt ? tax : ((subtotal - discountValue) * tax) / 100;
-    taxValue = Number(taxValue.toFixed(2));
-
-    // Only calculate shipping when it is set true in optional fields
-    const shippingValue = shipping;
-
-    // Calculate the total amount after applying discount, tax, and shipping
-    let total = subtotal - discountValue + taxValue + shippingValue;
-    total = Number(total.toFixed(2));
-
-    // Calculate the balance due after deducting the amount paid
-    let balanceDue = total - amountPaid;
-    balanceDue = Number(balanceDue.toFixed(2));
-
-    // Updating state with calculated values
-    setCalculations({
-      subtotal,
-      total,
-      balanceDue,
-    });
-  }, [JSON.stringify(data)]);
-
   return (
     <section
       id="invoice-footer"
       className="flex-1 grid grid-cols-6 justify-between gap-5"
     >
       <div className="col-span-4 flex flex-col gap-3">
-        {data.notes.length ? (
+        {data.invoiceFooter.notes.length ? (
           <div>
             <h1 className="text-sm font-extrabold tracking-tight">
               Comments or Special Instructions:
             </h1>
-            <p className="text-xs font-normal tracking-tight">{data.notes}</p>
+            <p className="text-xs font-normal tracking-tight">
+              {data.invoiceFooter.notes}
+            </p>
           </div>
         ) : null}
-        {data.terms.length ? (
+        {data.invoiceFooter.terms.length ? (
           <div>
             <h1 className="text-sm font-extrabold tracking-tight">Terms:</h1>
-            <p className="text-xs font-normal tracking-tight">{data.terms}</p>
+            <p className="text-xs font-normal tracking-tight">
+              {data.invoiceFooter.terms}
+            </p>
           </div>
         ) : null}
       </div>
@@ -103,19 +52,27 @@ const InvoiceFooter = ({ data }: InvoiceFooterProps) => {
         <div className="grid grid-cols-2 gap-5 text-sm font-semibold">
           <h3 className="text-end">Subtotal</h3>
           <p className="">
-            {data.currency + " " + formatAmount(calculations.subtotal)}
+            {data.invoiceDetails.currency +
+              " " +
+              formatAmount(data.invoiceItems.subTotal)}
           </p>
         </div>
 
         <Separator className="my-1 ml-auto opacity-0" />
 
-        {data.discount > 0 ? (
+        {data.additionalCharges.discount.amount > 0 ? (
           <div className="grid grid-cols-2 gap-5 text-sm font-normal">
             <h3 className="text-end">Discount</h3>
             <p className="flex items-center gap-1">
-              {data.isDiscountAmt ? <span>{data.currency}</span> : null}
-              <span>{formatAmount(data.discount)}</span>
-              {!data.isDiscountAmt ? <span>%</span> : null}
+              {data.additionalCharges.discount.isAmount ? (
+                <span>{data.invoiceDetails.currency}</span>
+              ) : null}
+              <span>
+                {formatAmount(data.additionalCharges.discount.amount)}
+              </span>
+              {!data.additionalCharges.discount.isAmount ? (
+                <span>%</span>
+              ) : null}
             </p>
           </div>
         ) : null}
@@ -123,17 +80,21 @@ const InvoiceFooter = ({ data }: InvoiceFooterProps) => {
         <div className="grid grid-cols-2 gap-5 text-sm font-normal">
           <h3 className="text-end">Tax</h3>
           <p className="flex items-center gap-1">
-            {data.isTaxAmt ? <span>{data.currency}</span> : null}
-            <span>{formatAmount(data.tax)}</span>
-            {!data.isTaxAmt ? <span>%</span> : null}
+            {data.additionalCharges.tax.isAmount ? (
+              <span>{data.invoiceDetails.currency}</span>
+            ) : null}
+            <span>{formatAmount(data.additionalCharges.tax.amount)}</span>
+            {!data.additionalCharges.tax.isAmount ? <span>%</span> : null}
           </p>
         </div>
 
-        {data.shipping > 0 ? (
+        {data.additionalCharges.shipping > 0 ? (
           <div className="grid grid-cols-2 gap-5 text-sm font-normal">
             <h3 className="text-end">Shipping</h3>
             <p className="">
-              {data.currency + " " + formatAmount(data.shipping)}
+              {data.invoiceDetails.currency +
+                " " +
+                formatAmount(data.additionalCharges.shipping)}
             </p>
           </div>
         ) : null}
@@ -142,21 +103,27 @@ const InvoiceFooter = ({ data }: InvoiceFooterProps) => {
 
         <div
           className={`grid grid-cols-2 gap-5 ${
-            data.amountPaid > 0 ? "text-sm font-semibold" : "font-bold"
+            data.additionalCharges.amountPaid > 0
+              ? "text-sm font-semibold"
+              : "font-bold"
           }`}
         >
           <h3 className="text-end">Total</h3>
           <p className="">
-            {data.currency + " " + formatAmount(calculations.total)}
+            {data.invoiceDetails.currency +
+              " " +
+              formatAmount(data.additionalCharges.total)}
           </p>
         </div>
 
-        {data.amountPaid > 0 ? (
+        {data.additionalCharges.amountPaid > 0 ? (
           <>
             <div className="grid grid-cols-2 gap-5 text-sm font-semibold">
               <h3 className="text-end">Amount Paid</h3>
               <p className="">
-                {data.currency + " " + formatAmount(data.amountPaid)}
+                {data.invoiceDetails.currency +
+                  " " +
+                  formatAmount(data.additionalCharges.amountPaid)}
               </p>
             </div>
 
@@ -165,7 +132,9 @@ const InvoiceFooter = ({ data }: InvoiceFooterProps) => {
             <div className="grid grid-cols-2 gap-5 font-bold">
               <h3 className="text-end">Balance</h3>
               <p className="">
-                {data.currency + " " + formatAmount(calculations.balanceDue)}
+                {data.invoiceDetails.currency +
+                  " " +
+                  formatAmount(data.additionalCharges.balanceDue)}
               </p>
             </div>
           </>
@@ -173,11 +142,11 @@ const InvoiceFooter = ({ data }: InvoiceFooterProps) => {
       </div>
 
       <div className="col-span-6 flex flex-col justify-center items-center">
-        {generateInvoiceQR(data.invoiceNumber)}
+        {generateInvoiceQR(data.invoiceDetails.invoiceNumber)}
         <p>
           <strong className="text-sm font-extrabold tracking-tight">
-            {data.thanksMessage.length
-              ? data.thanksMessage
+            {data.invoiceFooter.thanksMessage.length
+              ? data.invoiceFooter.thanksMessage
               : "THANK YOU FOR YOUR BUSINESS!"}
           </strong>
         </p>

@@ -7,11 +7,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatAmount } from "@/lib/utils";
-import { FormInterface, InvoiceInterface } from "@/types";
+import { InvoiceFormInterface, InvoiceInterface } from "@/types";
 import React from "react";
 
 interface InvoiceItemsSectionProps {
-  data: FormInterface | InvoiceInterface;
+  data: InvoiceFormInterface | InvoiceInterface;
 }
 
 const InvoiceItemsSection = ({ data }: InvoiceItemsSectionProps) => {
@@ -28,19 +28,21 @@ const InvoiceItemsSection = ({ data }: InvoiceItemsSectionProps) => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.items.length > 0 ? (
-            data.items.map((item, index) => (
+          {data.invoiceItems.items.length > 0 ? (
+            data.invoiceItems.items.map(({ itemDesc, qty, cost }, index) => (
               <TableRow key={`item-${index}`}>
                 <TableCell className="w-5">{index + 1}</TableCell>
-                <TableHead className="w-auto">{item.itemDesc}</TableHead>
+                <TableHead className="w-auto">{itemDesc}</TableHead>
                 <TableCell className="w-5">
-                  {data.currency + " " + item.qty}
+                  {data.invoiceDetails.currency + " " + qty}
                 </TableCell>
                 <TableCell className="w-5">
-                  {data.currency + " " + formatAmount(item.cost)}
+                  {data.invoiceDetails.currency + " " + formatAmount(cost)}
                 </TableCell>
                 <TableHead className="w-5 font-semibold">
-                  {data.currency + " " + formatAmount(item.qty * item.cost)}
+                  {data.invoiceDetails.currency +
+                    " " +
+                    formatAmount(qty * cost)}
                 </TableHead>
               </TableRow>
             ))
