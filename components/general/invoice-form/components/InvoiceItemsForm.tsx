@@ -67,7 +67,7 @@ export function InvoiceItemsForm() {
           </Button>
         </div>
       </div>
-
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       {Array.isArray((errors.invoiceItemsList as any)?.items) && (
         <Alert variant="destructive">
           <AlertCircleIcon />
@@ -77,6 +77,7 @@ export function InvoiceItemsForm() {
             <ul className="list-inside list-disc text-sm">
               {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               {(errors.invoiceItemsList as any)?.items.map(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (itemError: any, idx: number) => (
                   <React.Fragment key={idx}>
                     {itemError?.itemDesc && (

@@ -206,6 +206,7 @@ export default function InvoiceForm() {
       setTimeout(() => {
         // methods.setFocus accepts dot paths with numeric indices like 'items.0.qty'
         try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           methods.setFocus(firstPath as any);
         } catch (e) {
           // fallback: if focusing fails, log for debugging
@@ -217,6 +218,7 @@ export default function InvoiceForm() {
       setCurrentStep(0);
       setTimeout(() => {
         try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           methods.setFocus(firstPath as any);
         } catch {}
       }, 50);
