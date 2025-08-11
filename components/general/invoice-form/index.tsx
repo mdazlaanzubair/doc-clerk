@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useMemo, useState } from "react";
 import { getLocalStorage, upsertLocalStorage } from "@/lib/utils";
 import { toast } from "sonner";
+import { FormLastActiveStepInterface } from "@/types";
 
 /**
  * LocalStorage keys (single place to change).
@@ -119,7 +120,9 @@ export default function InvoiceForm() {
   // Load persisted data on mount
   useEffect(() => {
     const savedProgress = getLocalStorage(STORAGE_KEYS.FORM_DATA);
-    const savedLast: any = getLocalStorage(STORAGE_KEYS.LAST_STEP);
+    const savedLast: FormLastActiveStepInterface | null = getLocalStorage(
+      STORAGE_KEYS.LAST_STEP
+    );
 
     if (savedProgress) {
       // restore form values
@@ -150,6 +153,7 @@ export default function InvoiceForm() {
    * Recursively traverse the error object and return the first error path string,
    * e.g. "companyInfo.logo", "invoiceItemsList.items.0.qty", etc.
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function findFirstErrorPath(obj: any, prefix = ""): string | null {
     if (!obj || typeof obj !== "object") return null;
 
@@ -184,6 +188,7 @@ export default function InvoiceForm() {
     return null;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function jumpToFirstErrorStep(errors: any) {
     const firstPath = findFirstErrorPath(errors);
     if (!firstPath) return;

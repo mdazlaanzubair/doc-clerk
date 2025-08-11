@@ -75,6 +75,7 @@ export function InvoiceItemsForm() {
           <AlertDescription>
             <p>Please resolve these errors before proceeding further</p>
             <ul className="list-inside list-disc text-sm">
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               {(errors.invoiceItemsList as any)?.items.map(
                 (itemError: any, idx: number) => (
                   <React.Fragment key={idx}>
