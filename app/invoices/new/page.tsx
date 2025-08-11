@@ -1,6 +1,6 @@
 "use client";
 
-import InvoiceForm from "@/components/general/invoice-form";
+import InvoiceForm from "@/components/general/invoice/form";
 import React from "react";
 
 const Invoice = () => {
