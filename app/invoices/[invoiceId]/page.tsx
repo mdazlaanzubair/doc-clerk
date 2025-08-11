@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Edit2, Save, Trash2 } from "lucide-react";
 import InvoicePreview from "@/components/general/invoice/preview";
 import { InvoiceInterface } from "@/types";
-import { useInvoices } from "@/hooks/supabase/useInvoice";
+import { useInvoices } from "@/hooks/useInvoice";
 import { useAuth } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { useParams } from "next/navigation";

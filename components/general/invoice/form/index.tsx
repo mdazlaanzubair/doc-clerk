@@ -17,7 +17,7 @@ import { useEffect, useMemo, useState } from "react";
 import { getLocalStorage, upsertLocalStorage } from "@/lib/utils";
 import { toast } from "sonner";
 import { FormLastActiveStepInterface } from "@/types";
-import { useInvoices } from "@/hooks/supabase/useInvoice";
+import { useInvoices } from "@/hooks/useInvoice";
 import { useUser } from "@clerk/nextjs";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
