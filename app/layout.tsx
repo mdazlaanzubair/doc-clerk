@@ -46,7 +46,7 @@ export default function RootLayout({
                 <main className="w-full flex-1 flex flex-col px-3">
                   {children}
                 </main>
-                <Toaster closeButton />
+                <Toaster position="top-center" richColors closeButton />
                 <Footer />
               </div>
             </SupabaseProvider>

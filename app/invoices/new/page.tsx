@@ -1,7 +1,8 @@
 "use client";
 
+import InvoiceForm from "@/components/general/invoice-form";
 import React from "react";
-import InvoiceForm from "../../../components/general/invoice/form";
+// import InvoiceForm from "../../../components/general/invoice/form";
 
 const Invoice = () => {
   return (
@@ -13,6 +14,7 @@ const Invoice = () => {
         <p className="text-sm mt-2 font-semibold text-muted-foreground/50">
           Create professional invoices in a quick and easy way
         </p>
+        {/* <InvoiceForm /> */}
         <InvoiceForm />
       </section>
     </div>
