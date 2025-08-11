@@ -20,7 +20,7 @@ import { FormLastActiveStepInterface } from "@/types";
 import { useInvoices } from "@/hooks/supabase/useInvoice";
 import { useUser } from "@clerk/nextjs";
 import { Loader2 } from "lucide-react";
-import { set } from "date-fns";
+import { useRouter } from "next/navigation";
 
 /**
  * LocalStorage keys (single place to change).
@@ -101,6 +101,7 @@ export default function InvoiceForm() {
 
   const { isLoaded, isSignedIn, user } = useUser();
   const { upsertInvoice } = useInvoices();
+  const router = useRouter();
 
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -362,8 +363,9 @@ export default function InvoiceForm() {
           const data = await upsertInvoice(reqBody);
           upsertLocalStorage(STORAGE_KEYS.FORM_DATA, data);
           toast.success("Invoice saved successfully!");
+          router.push(`/invoices/${data.id}`);
         } catch (error) {
-          console.log("SAVING INVOICE ERRORS", error);
+          console.error("SAVING INVOICE ERRORS", error);
           toast.error("Something went wrong while saving invoice.");
         } finally {
           setIsLoading(false);
@@ -371,7 +373,7 @@ export default function InvoiceForm() {
       }
     },
     (errors) => {
-      console.log("SUBMIT ERRORS", errors);
+      console.error("SUBMIT ERRORS", errors);
       jumpToFirstErrorStep(errors);
       toast.error("Please fix validation errors before submitting.");
     }

@@ -10,11 +10,11 @@ import { formatAmount } from "@/lib/utils";
 import { InvoiceFormInterface, InvoiceInterface } from "@/types";
 import React from "react";
 
-interface InvoiceItemsSectionProps {
+interface invoiceItemsListSectionProps {
   data: InvoiceFormInterface | InvoiceInterface;
 }
 
-const InvoiceItemsSection = ({ data }: InvoiceItemsSectionProps) => {
+const invoiceItemsListSection = ({ data }: invoiceItemsListSectionProps) => {
   return (
     <section id="items-section" className="flex flex-col gap-5 my-5">
       <Table>
@@ -28,24 +28,26 @@ const InvoiceItemsSection = ({ data }: InvoiceItemsSectionProps) => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.invoiceItems.items.length > 0 ? (
-            data.invoiceItems.items.map(({ itemDesc, qty, cost }, index) => (
-              <TableRow key={`item-${index}`}>
-                <TableCell className="w-5">{index + 1}</TableCell>
-                <TableHead className="w-auto">{itemDesc}</TableHead>
-                <TableCell className="w-5">
-                  {data.invoiceDetails.currency + " " + qty}
-                </TableCell>
-                <TableCell className="w-5">
-                  {data.invoiceDetails.currency + " " + formatAmount(cost)}
-                </TableCell>
-                <TableHead className="w-5 font-semibold">
-                  {data.invoiceDetails.currency +
-                    " " +
-                    formatAmount(qty * cost)}
-                </TableHead>
-              </TableRow>
-            ))
+          {data.invoiceItemsList.items.length > 0 ? (
+            data.invoiceItemsList.items.map(
+              ({ itemDesc, qty, cost }, index) => (
+                <TableRow key={`item-${index}`}>
+                  <TableCell className="w-5">{index + 1}</TableCell>
+                  <TableHead className="w-auto">{itemDesc}</TableHead>
+                  <TableCell className="w-5">
+                    {data.invoiceDetails.currency + " " + qty}
+                  </TableCell>
+                  <TableCell className="w-5">
+                    {data.invoiceDetails.currency + " " + formatAmount(cost)}
+                  </TableCell>
+                  <TableHead className="w-5 font-semibold">
+                    {data.invoiceDetails.currency +
+                      " " +
+                      formatAmount(qty * cost)}
+                  </TableHead>
+                </TableRow>
+              )
+            )
           ) : (
             <TableRow>
               <TableHead className="w-auto text-center">No data</TableHead>
@@ -57,4 +59,4 @@ const InvoiceItemsSection = ({ data }: InvoiceItemsSectionProps) => {
   );
 };
 
-export default InvoiceItemsSection;
+export default invoiceItemsListSection;

@@ -86,7 +86,7 @@ export interface InvoiceFormInterface {
   companyInfo: CompanyInfoInterface;
   recipientInfo: RecipientInfoInterface;
   invoiceDetails: InvoiceDetailsInterface;
-  invoiceItems: InvoiceItemsListInterface;
+  invoiceItemsList: InvoiceItemsListInterface;
   additionalCharges: AdditionalChargesInterface;
   invoiceFooter: InvoiceFooterInterface;
 }

@@ -54,7 +54,7 @@ const InvoiceFooter = ({ data }: InvoiceFooterProps) => {
           <p className="">
             {data.invoiceDetails.currency +
               " " +
-              formatAmount(data.invoiceItems.subTotal)}
+              formatAmount(data.invoiceItemsList.subTotal)}
           </p>
         </div>
 

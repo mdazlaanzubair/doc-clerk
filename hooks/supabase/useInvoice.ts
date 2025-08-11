@@ -27,11 +27,12 @@ export function useInvoices() {
    * Get single invoice by ID
    */
   const getInvoiceById = useCallback(
-    async (invoiceId: string) => {
+    async (invoiceId: string, userId: string) => {
       const { data, error } = await supabase
         .from(DB_TABLE)
         .select("*")
         .eq("id", invoiceId)
+        .eq("userId", userId)
         .single();
 
       if (error) throw error;
