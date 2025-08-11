@@ -17,6 +17,10 @@ import { useEffect, useMemo, useState } from "react";
 import { getLocalStorage, upsertLocalStorage } from "@/lib/utils";
 import { toast } from "sonner";
 import { FormLastActiveStepInterface } from "@/types";
+import { useInvoices } from "@/hooks/supabase/useInvoice";
+import { useUser } from "@clerk/nextjs";
+import { Loader2 } from "lucide-react";
+import { set } from "date-fns";
 
 /**
  * LocalStorage keys (single place to change).
@@ -95,7 +99,11 @@ export default function InvoiceForm() {
     defaultValues,
   });
 
+  const { isLoaded, isSignedIn, user } = useUser();
+  const { upsertInvoice } = useInvoices();
+
   const [currentStep, setCurrentStep] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   /**
    * `lastActiveStep` represents the highest step the user has unlocked.
@@ -336,11 +344,31 @@ export default function InvoiceForm() {
 
   // Function to save form data to the database
   const handleFinalSubmit = methods.handleSubmit(
-    (data) => {
-      console.log("SUBMIT OK", data);
-      upsertLocalStorage(STORAGE_KEYS.FORM_DATA, data);
-      toast.success("Invoice saved successfully");
-      // ... do submit
+    async (formData) => {
+      if (!isLoading && isLoaded && isSignedIn && user && upsertInvoice) {
+        try {
+          setIsLoading(true);
+
+          // Preparing request body
+          const reqBody = {
+            ...formData,
+            userId: user.id,
+            isPublished: false,
+            isArchive: false,
+            downloadCount: 0,
+            printCount: 0,
+          };
+
+          const data = await upsertInvoice(reqBody);
+          upsertLocalStorage(STORAGE_KEYS.FORM_DATA, data);
+          toast.success("Invoice saved successfully!");
+        } catch (error) {
+          console.log("SAVING INVOICE ERRORS", error);
+          toast.error("Something went wrong while saving invoice.");
+        } finally {
+          setIsLoading(false);
+        }
+      }
     },
     (errors) => {
       console.log("SUBMIT ERRORS", errors);
@@ -431,7 +459,16 @@ export default function InvoiceForm() {
                 Next
               </Button>
             ) : (
-              <Button type="submit">Save Invoice</Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="animate-spin" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  <span>Save Invoice</span>
+                )}
+              </Button>
             )}
           </div>
         </form>

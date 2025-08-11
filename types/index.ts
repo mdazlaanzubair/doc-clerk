@@ -95,8 +95,8 @@ export interface InvoiceFormInterface {
 export interface InvoiceInterface extends InvoiceFormInterface {
   userId: string;
   id: string;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
   isPublished: boolean;
   isArchive: boolean;
   downloadCount: number;
