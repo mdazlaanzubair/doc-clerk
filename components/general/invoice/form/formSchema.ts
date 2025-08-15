@@ -10,13 +10,18 @@ const emailSchema = z.string().email("Invalid email address");
 const addressSchema = z
   .string()
   .min(5, "Address must be at least 5 characters");
-const urlSchema = z
-  .string()
-  .url("Invalid URL")
-  .or(z.literal(""))
-  .optional()
-  .default("");
-const optionalFieldsSchema = z.string().optional().default("");
+const urlSchema = z.string().url("Invalid URL").or(z.literal("")).optional();
+const optionalFieldsSchema = z.string().optional();
+const recipientSchema = z.object({
+  // Required fields
+  rep: nameSchema, // Company representative
+  companyName: nameSchema,
+  email: emailSchema,
+  address: addressSchema,
+
+  // Optional fields
+  phone: optionalFieldsSchema,
+});
 
 // Company info form schema of invoice creator
 export const companyInfoSchema = z.object({
@@ -32,59 +37,11 @@ export const companyInfoSchema = z.object({
 });
 
 // Recipient info schema
-export const recipientInfoSchema = z
-  .object({
-    billTo: z.object({
-      // Required fields
-      rep: nameSchema, // Company representative
-      companyName: nameSchema,
-      email: emailSchema,
-      address: addressSchema,
-
-      // Optional fields
-      phone: optionalFieldsSchema,
-    }),
-    isSameAsBillTo: z.boolean().default(true),
-    shipTo: z.object({
-      rep: optionalFieldsSchema,
-      companyName: optionalFieldsSchema,
-      email: optionalFieldsSchema,
-      phone: optionalFieldsSchema,
-      address: optionalFieldsSchema,
-    }),
-  })
-  .superRefine((data, ctx) => {
-    if (!data.isSameAsBillTo) {
-      if (!data.shipTo.rep) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Recipient name is required",
-          path: ["shipTo", "rep"],
-        });
-      }
-      if (!data.shipTo.companyName) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Company name is required",
-          path: ["shipTo", "companyName"],
-        });
-      }
-      if (!data.shipTo.email) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Email is required",
-          path: ["shipTo", "email"],
-        });
-      }
-      if (!data.shipTo.address) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Address is required",
-          path: ["shipTo", "address"],
-        });
-      }
-    }
-  });
+export const recipientInfoSchema = z.object({
+  billTo: recipientSchema,
+  isSameAsBillTo: z.boolean(),
+  shipTo: recipientSchema,
+});
 
 // Invoice details schema
 export const invoiceDetailsSchema = z.object({
@@ -98,7 +55,7 @@ export const invoiceDetailsSchema = z.object({
     z.date({ message: "Due date is required" }),
     z.string().min(1, "Due date is required"),
   ]),
-  currency: z.string().min(1, "Currency is required").default("$"),
+  currency: z.string().min(1, "Currency is required"),
 
   // Optional fields
   invoiceTitle: optionalFieldsSchema.default("INVOICE"),
@@ -137,11 +94,11 @@ export const additionalChargesSchema = z.object({
   amountPaid: amountSchema,
   shipping: amountSchema,
   discount: z.object({
-    isAmount: z.boolean().default(true),
+    isAmount: z.boolean(),
     amount: amountSchema,
   }),
   tax: z.object({
-    isAmount: z.boolean().default(false),
+    isAmount: z.boolean(),
     amount: amountSchema,
   }),
 });
@@ -150,10 +107,7 @@ export const additionalChargesSchema = z.object({
 export const invoiceFooterSchema = z.object({
   notes: optionalFieldsSchema,
   terms: optionalFieldsSchema,
-  thanksMessage: z
-    .string()
-    .min(5, "Message must be at least 5 characters")
-    .default("THANK YOU FOR YOUR BUSINESS!"),
+  thanksMessage: z.string().min(5, "Message must be at least 5 characters"),
 });
 
 // Complete invoice form schema

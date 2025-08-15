@@ -10,11 +10,35 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 
 export function RecipientInfoForm() {
-  const { watch, control } = useFormContext();
+  const { watch, control, setValue } = useFormContext();
   const isSameAsBillTo = watch("recipientInfo.isSameAsBillTo");
+  const billToRep = watch("recipientInfo.billTo.rep");
+  const billToCompanyName = watch("recipientInfo.billTo.companyName");
+  const billToEmail = watch("recipientInfo.billTo.email");
+  const billToPhone = watch("recipientInfo.billTo.phone");
+  const billToAddress = watch("recipientInfo.billTo.address");
+
+  useEffect(() => {
+    // If the 'isSameAsBillTo' set all the 'billTo' values in the 'shipTo' form values
+    if (isSameAsBillTo) {
+      setValue("recipientInfo.shipTo.rep", billToRep);
+      setValue("recipientInfo.shipTo.companyName", billToCompanyName);
+      setValue("recipientInfo.shipTo.email", billToEmail);
+      setValue("recipientInfo.shipTo.phone", billToPhone);
+      setValue("recipientInfo.shipTo.address", billToAddress);
+    }
+  }, [
+    isSameAsBillTo,
+    billToAddress,
+    billToCompanyName,
+    billToEmail,
+    billToPhone,
+    billToRep,
+  ]);
 
   return (
     <div className="space-y-4 p-5 border border-muted rounded-lg shadow">

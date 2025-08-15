@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, FormProvider } from "react-hook-form";
+import { v4 as uuidv4 } from "uuid";
 import {
   CompanyInfoForm,
   RecipientInfoForm,
@@ -14,21 +15,21 @@ import { Form } from "@/components/ui/form";
 import { completeInvoiceFormSchema } from "./formSchema";
 import { Button } from "@/components/ui/button";
 import { useEffect, useMemo, useState } from "react";
-import { getLocalStorage, upsertLocalStorage } from "@/lib/utils";
 import { toast } from "sonner";
-import { FormLastActiveStepInterface } from "@/types";
+import { InvoiceInterface } from "@/types";
 import { useInvoices } from "@/hooks/useInvoice";
-import { useUser } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-
-/**
- * LocalStorage keys (single place to change).
- */
-const STORAGE_KEYS = {
-  FORM_DATA: "formProgress",
-  LAST_STEP: "lastActiveStep",
-};
+import {
+  addInvoice,
+  clearFormProgress,
+  getFormProgress,
+  getInvoiceById,
+  getLastActiveStep,
+  saveFormProgress,
+  saveLastActiveStep,
+} from "@/lib/utils";
 
 // Default form values (kept identical to your original)
 const defaultValues = {
@@ -91,7 +92,11 @@ const defaultValues = {
   },
 };
 
-export default function InvoiceForm() {
+interface InvoiceFormPropsInterface {
+  invoiceId?: string;
+}
+
+export default function InvoiceForm({ invoiceId }: InvoiceFormPropsInterface) {
   // single form instance for whole wizard (keeps state across steps)
   const methods = useForm({
     resolver: zodResolver(completeInvoiceFormSchema),
@@ -99,18 +104,12 @@ export default function InvoiceForm() {
     defaultValues,
   });
 
-  const { isLoaded, isSignedIn, user } = useUser();
-  const { upsertInvoice } = useInvoices();
+  const { userId } = useAuth();
+  const InvoiceAPI = useInvoices();
   const router = useRouter();
 
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  /**
-   * `lastActiveStep` represents the highest step the user has unlocked.
-   * - user may navigate back to any step <= lastActiveStep
-   * - user CANNOT jump to steps > lastActiveStep
-   */
   const [lastActiveStep, setLastActiveStep] = useState<number>(0);
 
   // step config - keep the components here (not in state)
@@ -128,25 +127,63 @@ export default function InvoiceForm() {
 
   // Load persisted data on mount
   useEffect(() => {
-    const savedProgress = getLocalStorage(STORAGE_KEYS.FORM_DATA);
-    const savedLast: FormLastActiveStepInterface | null = getLocalStorage(
-      STORAGE_KEYS.LAST_STEP
-    );
+    // If invoice id is available fetch data from the database and set in the form
+    if (invoiceId && InvoiceAPI && userId) {
+      const fetchInvoiceData = async () => {
+        try {
+          setIsLoading(true);
+          const data: InvoiceInterface = await InvoiceAPI.getInvoiceById(
+            invoiceId,
+            userId
+          );
+          methods.reset(data);
+        } catch (error) {
+          const errMsg = "Something went wrong while fetching invoice data";
+          console.error(error);
+          toast.error(errMsg);
+        } finally {
+          setIsLoading(false);
+        }
+      };
 
-    if (savedProgress) {
+      fetchInvoiceData();
+
+      // Restoring the form steps
+      setCurrentStep(stepConfigs.length - 1);
+      setLastActiveStep(stepConfigs.length - 1);
+
+      // Updating local storage for form progress
+      saveFormProgress(methods.getValues());
+      saveLastActiveStep(stepConfigs.length - 1);
+    } else if (invoiceId && !userId) {
+      const data = getInvoiceById(invoiceId);
+
+      if (data) methods.reset(data);
+      else methods.reset(defaultValues);
+
+      // Restoring the form steps
+      setCurrentStep(stepConfigs.length - 1);
+      setLastActiveStep(stepConfigs.length - 1);
+
+      // Updating local storage for form progress
+      saveFormProgress(methods.getValues());
+      saveLastActiveStep(stepConfigs.length - 1);
+    } else {
+      const savedProgress = getFormProgress();
+      const savedLast: number = getLastActiveStep() || 0;
+
       // restore form values
-      methods.reset(savedProgress);
-    }
+      if (savedProgress) methods.reset(savedProgress);
 
-    if (savedLast && typeof savedLast?.step === "number") {
-      const persistedLast = Math.min(savedLast.step, stepConfigs.length - 1);
-      setLastActiveStep(persistedLast);
       // If the saved last step is ahead of zero, restore the current step to that
       // so user continues where they left
-      setCurrentStep(persistedLast);
+      if (savedLast && typeof savedLast === "number") {
+        const persistedLast = Math.min(savedLast, stepConfigs.length - 1);
+        setLastActiveStep(persistedLast);
+        setCurrentStep(persistedLast);
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // run once on mount
+  }, [invoiceId, InvoiceAPI, userId]); // run once on mount
 
   // Mapping steps with the form/steps keys
   const FIELD_TO_STEP_MAP: Record<string, number> = {
@@ -158,10 +195,7 @@ export default function InvoiceForm() {
     invoiceFooter: 5,
   };
 
-  /**
-   * Recursively traverse the error object and return the first error path string,
-   * e.g. "companyInfo.logo", "invoiceItemsList.items.0.qty", etc.
-   */
+  // Function to recursively traverse the error object and return the first error path string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function findFirstErrorPath(obj: any, prefix = ""): string | null {
     if (!obj || typeof obj !== "object") return null;
@@ -197,6 +231,7 @@ export default function InvoiceForm() {
     return null;
   }
 
+  // Function to jump to the form where the error occurs
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function jumpToFirstErrorStep(errors: any) {
     const firstPath = findFirstErrorPath(errors);
@@ -234,10 +269,7 @@ export default function InvoiceForm() {
     }
   }
 
-  /**
-   * Validates fields for the current step.
-   * Return boolean if valid (true = ok to proceed).
-   */
+  // Function to validates fields for the current step
   const validateCurrentStep = async (stepIndex: number) => {
     // map step to fields that must be validated before moving forward
     // you can extend this to be more precise / more fields
@@ -283,11 +315,9 @@ export default function InvoiceForm() {
     }
   };
 
-  /**
-   * Move to the next step (if current step is valid).
-   * If `goToIndex` is provided and is a number it will attempt to jump to that index
-   * (only allowed if the target index <= unlocked step after validation).
-   */
+  // Function to move to the next step (if current step is valid)
+  // If `goToIndex` is provided and is a number it will attempt to jump to that index
+  // only allowed if the target index <= unlocked step after validation)
   const handleNext = async (goToIndex?: number) => {
     const isValid = await validateCurrentStep(currentStep);
 
@@ -298,7 +328,7 @@ export default function InvoiceForm() {
 
     // Save progress before moving on
     const currentFormValues = methods.getValues();
-    upsertLocalStorage(STORAGE_KEYS.FORM_DATA, currentFormValues);
+    saveFormProgress(currentFormValues);
 
     // compute the next step:
     let nextStep = typeof goToIndex === "number" ? goToIndex : currentStep + 1;
@@ -309,67 +339,90 @@ export default function InvoiceForm() {
     const newLastActive = Math.max(lastActiveStep, nextStep);
 
     // persist unlocked step
-    upsertLocalStorage(STORAGE_KEYS.LAST_STEP, { step: newLastActive });
+    saveLastActiveStep(newLastActive);
     setLastActiveStep(newLastActive);
-
     setCurrentStep(nextStep);
-
     toast.info("Progress saved successfully");
   };
 
-  /**
-   * Move back one step. Do NOT reduce `lastActiveStep`.
-   */
+  // Function to move back one step. Do NOT reduce `lastActiveStep`.
   const handlePrevious = () => {
     if (currentStep === 0) return;
     const formValues = methods.getValues();
-    upsertLocalStorage(STORAGE_KEYS.FORM_DATA, formValues);
+    saveFormProgress(formValues);
     // keep lastActiveStep as-is (we don't want to lock user out)
     setCurrentStep((s) => s - 1);
     toast.info("Progress saved successfully");
   };
 
-  /**
-   * Called when user clicks a step indicator (the bubbles).
-   * Allow only if the index is already unlocked (<= lastActiveStep).
-   * No revalidation required for going backwards / reviewing.
-   */
+  // Function to ve called when user clicks a step indicator (the bubbles).
+  // Allow only if the index is already unlocked (<= lastActiveStep).
+  // No revalidation required for going backwards / reviewing.
   const goToStep = (index: number) => {
     if (index <= lastActiveStep) {
       setCurrentStep(index);
     } else {
       // optionally notify user why they can't jump ahead
-      toast("Please complete the current step before accessing this one.");
+      toast.info("Please complete the current step before accessing this one.");
     }
   };
 
   // Function to save form data to the database
   const handleFinalSubmit = methods.handleSubmit(
     async (formData) => {
-      if (!isLoading && isLoaded && isSignedIn && user && upsertInvoice) {
-        try {
+      if (isLoading || !formData) return;
+
+      try {
+        // If user in unauthenticated / Guest, then
+        // store the data in the browser local storage
+        if (!userId) {
+          // Changing loading state
           setIsLoading(true);
 
           // Preparing request body
-          const reqBody = {
+          const reqBody: InvoiceInterface = {
             ...formData,
-            userId: user.id,
             isPublished: false,
             isArchive: false,
             downloadCount: 0,
             printCount: 0,
+            isPaid: false,
+            id: uuidv4(), // Creating custom id
+            user_id: "Guest", // adding GUEST user id
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
           };
 
-          const data = await upsertInvoice(reqBody);
-          upsertLocalStorage(STORAGE_KEYS.FORM_DATA, data);
+          addInvoice(reqBody);
           toast.success("Invoice saved successfully!");
-          router.push(`/invoices/${data.id}`);
-        } catch (error) {
-          console.error("SAVING INVOICE ERRORS", error);
-          toast.error("Something went wrong while saving invoice.");
-        } finally {
+          clearFormProgress(); // Clearing local storage form data
+          router.push(`/invoices/${reqBody.id}/preview`);
           setIsLoading(false);
         }
+
+        if (userId && InvoiceAPI) {
+          // Preparing request body
+          const reqBody = {
+            ...formData,
+            isPaid: false,
+            isPublished: false,
+            isArchive: false,
+            downloadCount: 0,
+            printCount: 0,
+            user_id: userId,
+          };
+
+          (reqBody as InvoiceInterface).user_id = userId;
+          const data = await InvoiceAPI.upsertInvoice(reqBody);
+          toast.success("Invoice saved successfully!");
+          clearFormProgress(); // Clearing local storage form data
+          router.push(`/invoices/${data.id}/preview`);
+        }
+      } catch (error) {
+        console.error("SAVING INVOICE ERRORS", error);
+        toast.error("Something went wrong while saving invoice.");
+      } finally {
+        setIsLoading(false);
       }
     },
     (errors) => {

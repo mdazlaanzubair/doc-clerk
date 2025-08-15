@@ -1,48 +1,62 @@
 "use client";
 
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { useSession } from "@clerk/nextjs";
-import { createContext, useContext, useEffect, useState } from "react";
 
 type SupabaseContext = {
   supabase: SupabaseClient | null;
-  isLoaded: boolean;
+};
+
+type ProviderProps = {
+  children: ReactNode;
 };
 
 const Context = createContext<SupabaseContext>({
   supabase: null,
-  isLoaded: false,
 });
 
-type Props = {
-  children: React.ReactNode;
+const configs = {
+  supabase_url: process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+  supabase_key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+  jwt_template: "supabase-jwt-template",
 };
 
-export default function SupabaseProvider({ children }: Props) {
+export default function SupabaseProvider({ children }: ProviderProps) {
   const { session } = useSession();
   const [supabase, setSupabase] = useState<SupabaseClient | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Function to create supabase-clerk client
+  const createClerkSupabaseClient = () => {
+    return createClient(configs.supabase_url, configs.supabase_key, {
+      global: {
+        fetch: async (url, options = {}) => {
+          const clerkToken = await session?.getToken({
+            template: configs.jwt_template,
+          });
+          const headers = new Headers(options?.headers);
+          headers.set("Authorization", `Bearer ${clerkToken}`);
+          return fetch(url, { ...options, headers });
+        },
+      },
+    });
+  };
 
   useEffect(() => {
     if (!session) return;
-
-    const client = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        accessToken: () => session?.getToken(),
-      }
-    );
-
+    console.log("Client is loading!");
+    const client = createClerkSupabaseClient();
+    console.log("Client is loaded!");
     setSupabase(client);
-    setIsLoaded(true);
   }, [session]);
 
-  return (
-    <Context.Provider value={{ supabase, isLoaded }}>
-      {!isLoaded ? <div>Loading...</div> : children}
-    </Context.Provider>
-  );
+  return <Context.Provider value={{ supabase }}>{children}</Context.Provider>;
 }
 
 export const useSupabase = () => {
@@ -52,6 +66,5 @@ export const useSupabase = () => {
   }
   return {
     supabase: context.supabase,
-    isLoaded: context.isLoaded,
   };
 };

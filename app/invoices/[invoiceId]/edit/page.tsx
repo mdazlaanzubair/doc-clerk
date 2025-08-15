@@ -1,7 +1,15 @@
 import InvoiceForm from "@/components/general/invoice/form";
 import React from "react";
 
-const Invoice = () => {
+interface InvoicePagePropsInterface {
+  params: Promise<{
+    invoiceId: string;
+  }>;
+}
+
+const Invoice = async ({ params }: InvoicePagePropsInterface) => {
+  const { invoiceId } = await params;
+
   return (
     <div className="w-full h-full max-w-4xl flex flex-col mx-auto py-3 gap-10 my-5">
       <section id="invoice-form-section" className="w-full flex flex-col py-3">
@@ -11,7 +19,7 @@ const Invoice = () => {
         <p className="text-sm mt-2 font-semibold text-muted-foreground/50">
           Create professional invoices in a quick and easy way
         </p>
-        <InvoiceForm />
+        <InvoiceForm invoiceId={invoiceId} />
       </section>
     </div>
   );

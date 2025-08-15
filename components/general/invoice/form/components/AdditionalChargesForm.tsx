@@ -250,7 +250,7 @@ export function AdditionalChargesForm() {
             </div>
             <div className="space-y-2">
               <FormItem>
-                <FormLabel>Balance</FormLabel>
+                <FormLabel>Balance / Payable Amount</FormLabel>
                 <FormControl>
                   <Input
                     className="focus-visible:ring-0"

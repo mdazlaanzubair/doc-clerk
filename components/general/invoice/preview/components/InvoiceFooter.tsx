@@ -11,7 +11,7 @@ interface InvoiceFooterProps {
 const InvoiceFooter = ({ data }: InvoiceFooterProps) => {
   // Function to generate invoice QR Code
   function generateInvoiceQR(invoiceId: string) {
-    const url = `${process.env.NEXT_PUBLIC_BASE_URL}/invoices/${invoiceId}`;
+    const url = `${process.env.NEXT_PUBLIC_BASE_URL}/invoices/${invoiceId}preview`;
     return (
       <QRCodeSVG
         value={url}
@@ -29,7 +29,7 @@ const InvoiceFooter = ({ data }: InvoiceFooterProps) => {
       className="flex-1 grid grid-cols-6 justify-between gap-5"
     >
       <div className="col-span-4 flex flex-col gap-3">
-        {data.invoiceFooter.notes.length ? (
+        {data.invoiceFooter.notes?.length ? (
           <div>
             <h1 className="text-sm font-extrabold tracking-tight">
               Comments or Special Instructions:
@@ -39,7 +39,7 @@ const InvoiceFooter = ({ data }: InvoiceFooterProps) => {
             </p>
           </div>
         ) : null}
-        {data.invoiceFooter.terms.length ? (
+        {data.invoiceFooter.terms?.length ? (
           <div>
             <h1 className="text-sm font-extrabold tracking-tight">Terms:</h1>
             <p className="text-xs font-normal tracking-tight">

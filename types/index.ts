@@ -1,8 +1,3 @@
-// Form last active step interface
-export interface FormLastActiveStepInterface {
-  step: number;
-}
-
 // Company info interface
 export interface CompanyInfoInterface {
   // Required fields
@@ -76,8 +71,8 @@ export interface AdditionalChargesInterface {
 
 // Invoice footer interface
 export interface InvoiceFooterInterface {
-  notes: string;
-  terms: string;
+  notes?: string;
+  terms?: string;
   thanksMessage: string;
 }
 
@@ -93,7 +88,7 @@ export interface InvoiceFormInterface {
 
 // Invoice interface
 export interface InvoiceInterface extends InvoiceFormInterface {
-  userId: string;
+  user_id: string;
   id: string;
   createdAt: string;
   updatedAt: string;
@@ -101,4 +96,5 @@ export interface InvoiceInterface extends InvoiceFormInterface {
   isArchive: boolean;
   downloadCount: number;
   printCount: number;
+  isPaid: boolean;
 }

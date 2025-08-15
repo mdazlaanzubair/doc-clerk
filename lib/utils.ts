@@ -1,5 +1,5 @@
+import { InvoiceFormInterface, InvoiceInterface } from "@/types";
 import { clsx, type ClassValue } from "clsx";
-import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -35,55 +35,83 @@ export function formatAmount(amount: number): string {
 // localStorageHelpers
 // ===================
 
-/**
- * Save or update (upsert) a value in localStorage for the given key.
- * @param key - The localStorage key
- * @param data - The data to save (will be stringified as JSON)
- */
-export function upsertLocalStorage<T>(key: string, data: T): void {
+// Generic helpers
+// ---------------
+function setData<T>(key: string, value: T): void {
   try {
-    const json = JSON.stringify(data);
-    localStorage.setItem(key, json);
+    const serialized = JSON.stringify(value);
+    localStorage.setItem(key, serialized);
   } catch (error) {
-    toast(`Something went wrong while saving progress`);
-    console.error(
-      `Error saving data to localStorage with key "${key}":`,
-      error
-    );
+    console.error(`Error saving ${key} to localStorage:`, error);
   }
 }
 
-/**
- * Retrieve a value from localStorage by key.
- * @param key - The localStorage key
- * @returns Parsed value or null if not found or parsing fails
- */
-export function getLocalStorage<T>(key: string): T | null {
+function getData<T>(key: string): T | null {
   try {
-    const json = localStorage.getItem(key);
-    return json ? (JSON.parse(json) as T) : null;
+    const stored = localStorage.getItem(key);
+    return stored ? (JSON.parse(stored) as T) : null;
   } catch (error) {
-    toast(`Something went wrong while fetching saved progress`);
-    console.error(
-      `Error reading data from localStorage with key "${key}":`,
-      error
-    );
+    console.error(`Error reading ${key} from localStorage:`, error);
     return null;
   }
 }
 
-/**
- * Delete a key from localStorage.
- * @param key - The localStorage key
- */
-export function deleteLocalStorage(key: string): void {
-  try {
-    localStorage.removeItem(key);
-  } catch (error) {
-    toast(`Something went wrong while deleting saved progress`);
-    console.error(
-      `Error deleting data from localStorage with key "${key}":`,
-      error
-    );
-  }
+// Form Progress + Last Active Step
+// --------------------------------
+export function saveFormProgress(progress: InvoiceFormInterface): void {
+  setData<InvoiceFormInterface>("formProgress", progress);
+}
+
+export function getFormProgress(): InvoiceFormInterface | null {
+  return getData<InvoiceFormInterface>("formProgress");
+}
+
+export function saveLastActiveStep(step: number): void {
+  setData<number>("lastActiveStep", step);
+}
+
+export function getLastActiveStep(): number | null {
+  return getData<number>("lastActiveStep");
+}
+
+export function clearFormProgress(): void {
+  localStorage.removeItem("formProgress");
+  localStorage.removeItem("lastActiveStep");
+}
+
+// CRUD for Invoices
+// -----------------
+const INVOICES_KEY = "invoices";
+
+export function getInvoices(): InvoiceInterface[] {
+  return getData<InvoiceInterface[]>(INVOICES_KEY) || [];
+}
+
+export function saveInvoices(invoices: InvoiceInterface[]): void {
+  setData<InvoiceInterface[]>(INVOICES_KEY, invoices);
+}
+
+export function addInvoice(invoice: InvoiceInterface): void {
+  const invoices = getInvoices();
+  invoices.push(invoice);
+  saveInvoices(invoices);
+}
+
+export function updateInvoice(updatedInvoice: InvoiceInterface): void {
+  let invoices = getInvoices();
+  invoices = invoices.map((inv) =>
+    inv.id === updatedInvoice.id ? updatedInvoice : inv
+  );
+  saveInvoices(invoices);
+}
+
+export function deleteInvoice(id: string): void {
+  let invoices = getInvoices();
+  invoices = invoices.filter((inv) => inv.id !== id);
+  saveInvoices(invoices);
+}
+
+export function getInvoiceById(id: string): InvoiceInterface | null {
+  const invoices = getInvoices();
+  return invoices.find((inv) => inv.id === id) || null;
 }

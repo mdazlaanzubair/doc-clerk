@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import { InvoiceInterface } from "@/types";
 import { useSupabase } from "@/provider/SupabaseProvider";
+import { toast } from "sonner";
 
 const DB_TABLE = "invoices";
 
@@ -10,18 +11,7 @@ export function useInvoices() {
   // Create a supabase client on the browser with project's credentials
   const { supabase } = useSupabase();
 
-  if (!supabase) {
-    return {
-      getInvoiceById: null,
-      getInvoices: null,
-      upsertInvoice: null,
-      deleteInvoice: null,
-      publishInvoice: null,
-      toggleArchiveInvoice: null,
-      incrementDownload: null,
-      incrementPrint: null,
-    };
-  }
+  if (!supabase) return null;
 
   /**
    * Get single invoice by ID
@@ -32,7 +22,7 @@ export function useInvoices() {
         .from(DB_TABLE)
         .select("*")
         .eq("id", invoiceId)
-        .eq("userId", userId)
+        .eq("user_id", userId)
         .single();
 
       if (error) throw error;
@@ -44,15 +34,19 @@ export function useInvoices() {
   /**
    * Get all invoices by user ID
    */
-  const getInvoices = useCallback(async () => {
-    const { data, error } = await supabase
-      .from(DB_TABLE)
-      .select("*")
-      .order("created_at", { ascending: false });
+  const getInvoices = useCallback(
+    async (userId: string) => {
+      const { data, error } = await supabase
+        .from(DB_TABLE)
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
 
-    if (error) throw error;
-    return data as InvoiceInterface[];
-  }, [supabase]);
+      if (error) throw error;
+      return data as InvoiceInterface[];
+    },
+    [supabase]
+  );
 
   /**
    * Add new or update existing invoice
@@ -96,11 +90,12 @@ export function useInvoices() {
    * Delete invoice (only if not published)
    */
   const deleteInvoice = useCallback(
-    async (invoiceId: string) => {
+    async (invoiceId: string, userId: string) => {
       const { data: existing } = await supabase
         .from(DB_TABLE)
         .select("isPublished")
         .eq("id", invoiceId)
+        .eq("user_id", userId)
         .single();
 
       if (existing?.isPublished) {
@@ -122,15 +117,16 @@ export function useInvoices() {
    * Publish invoice (one-time only)
    */
   const publishInvoice = useCallback(
-    async (invoiceId: string) => {
+    async (invoiceId: string, userId: string) => {
       const { data: existing } = await supabase
         .from(DB_TABLE)
         .select("isPublished")
         .eq("id", invoiceId)
+        .eq("user_id", userId)
         .single();
 
       if (existing?.isPublished) {
-        throw new Error("Invoice already published.");
+        toast.info("Invoice already published.");
       }
 
       const { data, error } = await supabase
